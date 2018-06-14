@@ -7,7 +7,7 @@ ensure the full range is reachable.
 
 from time import sleep
 from gpiozero import Servo
-from aiy.pins import PIN_A, PIN_B, PIN_C
+from aiy.vision.pins import PIN_A, PIN_B, PIN_C
 
 # Each servo within the pan-tilt-rotate camera mount has its own object
 pan_servo = Servo(PIN_A)

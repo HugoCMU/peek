@@ -1,31 +1,31 @@
 #!/usr/bin/env python3
-# Copyright 2017 Google Inc.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-"""Camera inference face detection demo code.
-
-Runs continuous face detection on the VisionBonnet and prints the number of
-detected faces.
-
-Example:
-face_detection_camera.py --num_frames 10
-"""
 import argparse
 
 from aiy.vision.inference import CameraInference
-from aiy.vision.models import face_detection
-from aiy.vision.annotator import Annotator
+from aiy.vision.inference import ModelDescriptor
+from aiy.vision.models import utils
 from picamera import PiCamera
+
+_COMPUTE_GRAPH_NAME = 'face_detection.binaryproto'
+
+
+def model_descriptor(graph_name):
+    # Face detection model has special implementation in VisionBonnet firmware.
+    # input_shape, input_normalizer, and compute_graph params have on effect.
+    return ModelDescriptor(
+        name='ModelDescriptor',
+        input_shape=(1, 0, 0, 3),
+        input_normalizer=(0, 0),
+        compute_graph=utils.load_compute_graph(graph_name))
+
+
+def get_action(result):
+    """Returns list servo actions decoded from the inference result."""
+    assert len(result.tensors) == 1
+    # TODO(dkovalev): check tensor shapes
+    # TODO: Previous actions, recurrent state, etc
+    action = result.tensors['output'].data
+    return action
 
 
 def main():
@@ -57,31 +57,12 @@ def main():
         camera.framerate = 30
         camera.start_preview()
 
-        # Annotator renders in software so use a smaller size and scale results
-        # for increased performace.
-        annotator = Annotator(camera, dimensions=(320, 240))
-        scale_x = 320 / 1640
-        scale_y = 240 / 1232
-
-        # Incoming boxes are of the form (x, y, width, height). Scale and
-        # transform to the form (x1, y1, x2, y2).
-        def transform(bounding_box):
-            x, y, width, height = bounding_box
-            return (scale_x * x, scale_y * y, scale_x * (x + width),
-                    scale_y * (y + height))
-
-        with CameraInference(face_detection.model()) as inference:
+        with CameraInference(model_descriptor(_COMPUTE_GRAPH_NAME)) as inference:
             for i, result in enumerate(inference.run()):
                 if i == args.num_frames:
                     break
-                faces = face_detection.get_faces(result)
-                annotator.clear()
-                for face in faces:
-                    annotator.bounding_box(transform(face.bounding_box), fill=0)
-                annotator.update()
-                print('Iteration #%d: num_faces=%d' % (i, len(faces)))
-
-        camera.stop_preview()
+                action = get_action(result)
+                print('Iteration #%d: actions=%s' % (i, str(action)))
 
 
 if __name__ == '__main__':
