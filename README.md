@@ -1,7 +1,6 @@
-# Campo
+# Peek
 
-Personal project to attempt at automating the monitoring and logging of a vegetable garden.
-
+Personal project that attempts to control a pan/tilt camera mount with a simple model running on a AIY vision kit.
 
 ## Requirements
 

@@ -3,18 +3,14 @@ from pathlib import Path
 import re
 import tensorflow as tf
 # Repo specific imports
-from model import PlantAgeModel
-
-# Enable eager execution
-tfe = tf.contrib.eager
-tf.enable_eager_execution(device_policy=tfe.DEVICE_PLACEMENT_SILENT)
+from model import StarterModel
 
 # Dataset/Model specific parameters
 TRAIN_PATH = 'PSI_Tray031/tv'
 
 # Training parameters
 MODEL_CKPT = 'model.ckpt'
-IMAGE_SIZE = [160, 160]
+IMAGE_SIZE = [160, 160, 3]
 SHUFFLE_BUFFER = 1
 NUM_EPOCHS = 10
 LEARNING_RATE = 0.0001
@@ -28,24 +24,6 @@ data_dir = root_dir / 'data' / 'images_and_annotations'
 train_dir = data_dir / TRAIN_PATH
 model_dir = root_dir / 'model'
 log_dir = root_dir / 'log'
-
-
-def _plant_age_from_filename(filename):
-    """
-    Gets the plant age (0, 1) from image filename using regex. Dataset specific.
-    :param filename: (str) image filename
-    :return: (float) plant age (0, 1)
-    """
-    # Dataset specific constants
-    PLANT_START_DATE = datetime.datetime(2015, 12, 14, hour=12, minute=54, second=51)
-    PLANT_AGE_MULT = 1.5 * 2592000  # Age of plant in seconds for normalizing
-    # Sample filename: PSI_Tray031_2015-12-26--17-38-25_top.png
-    filename_regex = re.search(r'(201\d)-(\d+)-(\d+)--(\d+)-(\d+)-(\d+)', str(filename))
-    year, month, day, hour, min, sec = (int(_) for _ in filename_regex.groups())
-    date = datetime.datetime(year, month, day, hour=hour, minute=min, second=sec)
-    plant_age = date - PLANT_START_DATE
-    # Normalize age between 0 and 1
-    return plant_age.total_seconds() / PLANT_AGE_MULT
 
 
 def _parse_single(filename, label, image_size=IMAGE_SIZE):
@@ -84,7 +62,12 @@ def load_dataset(train_dir, shuffle_buffer=SHUFFLE_BUFFER, num_epochs=NUM_EPOCHS
 
 if __name__ == '__main__':
 
-    model = PlantAgeModel()
+    # Enable eager execution
+    tfe = tf.contrib.eager
+    tf.enable_eager_execution(device_policy=tfe.DEVICE_PLACEMENT_SILENT)
+
+    # Model and optimizer
+    model = StarterModel(input_shape=IMAGE_SIZE)
     optimizer = tf.train.AdamOptimizer(learning_rate=LEARNING_RATE)
 
     # Tensorboard summary writer

@@ -1,19 +1,9 @@
 # =========== #
 # Local Files #
 # =========== #
-tf/farmer/model/*
-tf/farmer/log/*
-tf/farmer/data/*
-tf/plant_age/model/*
-tf/plant_age/log/*
-tf/plant_age/data/*
-tf/local/*
-local/images/*
-local/logs/*
-local/sched/*
-!local/sched/test.yaml
-!local/logs/test_campo.csv
-campoenv/*
+model/*
+log/*
+data/*
 
 # =========== #
 #     Data    #

@@ -1,14 +1,14 @@
 import tensorflow as tf
 
 
-class PlantAgeModel(tf.keras.Model):
+class StarterModel(tf.keras.Model):
     """
-    This model takes an image of the plant as input and regresses an age [0, 1)
+    This model takes an image from the RPiZero camera and outputs servo commands
     """
 
-    def __init__(self):
-        super(PlantAgeModel, self).__init__()
-        self.encoder = tf.keras.applications.mobilenet.MobileNet(input_shape=(160, 160, 3),
+    def __init__(self, input_shape):
+        super(StarterModel, self).__init__()
+        self.cnn_base = tf.keras.applications.mobilenet.MobileNet(input_shape=input_shape,
                                                                  # depth_multiplier=0.5,
                                                                  include_top=False,
                                                                  weights='imagenet',
@@ -19,21 +19,21 @@ class PlantAgeModel(tf.keras.Model):
         self.head_1 = tf.keras.layers.Dense(128, kernel_initializer='normal', activation='relu')
         self.head_2 = tf.keras.layers.Dense(1, kernel_initializer='normal')
 
-    def predict(self, input):
-        result = self.encoder(input)
-        result = self.bn1(result)
-        result = self.head_1(result)
-        result = self.bn2(result)
-        result = self.head_2(result)
-        return result
+    def predict(self, x):
+        x = self.cnn_base(x)
+        x = self.bn1(x)
+        x = self.head_1(x)
+        x = self.bn2(x)
+        x = self.head_2(x)
+        return x
 
-    def loss(self, input, target):
-        output = self.predict(input)
+    def loss(self, x, target):
+        output = self.predict(x)
         error = output - target
         return tf.reduce_mean(tf.square(error))
 
-    def grad(self, input, target):
+    def grad(self, x, target):
         with tf.contrib.eager.GradientTape() as tape:
-            loss_value = self.loss(input, target)
+            loss_value = self.loss(x, target)
             tf.contrib.summary.scalar('loss', loss_value)
         return tape.gradient(loss_value, self.variables), loss_value
