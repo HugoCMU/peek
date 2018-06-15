@@ -21,7 +21,7 @@ class StarterModel(tf.keras.Model):
         self.bn1 = tf.keras.layers.BatchNormalization()
         self.bn2 = tf.keras.layers.BatchNormalization()
         self.head_1 = tf.keras.layers.Dense(128, kernel_initializer='normal', activation='relu')
-        self.head_2 = tf.keras.layers.Dense(3, kernel_initializer='normal')
+        self.head_2 = tf.keras.layers.Dense(1, kernel_initializer='normal')
 
     def predict(self, x):
         x = self.cnn_base(x)

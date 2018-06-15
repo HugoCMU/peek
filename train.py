@@ -5,7 +5,7 @@ import tensorflow as tf
 from model import StarterModel
 
 # Dataset/Model specific parameters
-TRAIN_PATH = 'PSI_Tray031/tv'
+DATASET = 'dataset_18-06-15-22'
 
 # Training parameters
 MODEL_CKPT = 'model.ckpt'
@@ -19,10 +19,22 @@ SAVE_EVERY_N_STEPS = 5
 
 # Directories
 root_dir = Path.cwd()
-data_dir = root_dir / 'data' / 'images_and_annotations'
-train_dir = data_dir / TRAIN_PATH
+data_dir = root_dir / 'data' / DATASET
 model_dir = root_dir / 'model'
 log_dir = root_dir / 'log'
+
+
+def _target_from_filename(filename):
+    """
+    Gets the target from image filename using regex. Dataset specific.
+    :param filename: (str) image filename
+    :return: (int) label in [0, 1]
+    """
+    # Sample filename: PSI_Tray031_2015-12-26--17-38-25_top.png
+    filename_regex = re.search(r'\d+_([a-z]+).png', str(filename))
+    str_label = filename_regex.group()[0]
+    label_dict = {'high': 1, 'low': 0}
+    return label_dict[str_label]
 
 
 def _parse_single(filename, label, image_size=IMAGE_SIZE):
@@ -50,8 +62,8 @@ def load_dataset(train_dir, shuffle_buffer=SHUFFLE_BUFFER, num_epochs=NUM_EPOCHS
     """
     # Dataset creation from images (target is in filename)
     filenames = tf.constant(list(str(file) for file in train_dir.glob('*.png')))
-    plant_ages = list(map(_plant_age_from_filename, train_dir.glob('*.png')))
-    labels = tf.constant(plant_ages)
+    labels = list(map(_target_from_filename, train_dir.glob('*.png')))
+    labels = tf.constant(labels)
     dataset = tf.data.Dataset.from_tensor_slices((filenames, labels))
     dataset = dataset.map(lambda filename, label: _parse_single(filename, label))
     dataset = dataset.shuffle(shuffle_buffer).repeat(num_epochs).batch(batch_size)
@@ -96,7 +108,7 @@ if __name__ == '__main__':
     ckpt.restore(latest_ckpt)
 
     # Load dataset
-    dataset = load_dataset(train_dir)
+    dataset = load_dataset(data_dir)
 
     # Train the model
     train(model, optimizer, dataset, ckpt)
