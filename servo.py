@@ -18,7 +18,8 @@ servos = {'pan': pan_servo,
           'rot': rot_servo}
 
 def servo(action):
-    #TODO: Use Servo() calls to move 
+    #TODO: Use Servo() calls to move
+    pass
 
 if __name__ == '__main__':
     # Move the Servos back and forth until the user terminates the example.
