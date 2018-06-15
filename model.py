@@ -1,12 +1,17 @@
 import tensorflow as tf
 
+
 class StarterModel(tf.keras.Model):
     """
     This model takes an image from the RPiZero camera and outputs servo commands
     """
 
-    def __init__(self, input_shape):
+    def __init__(self, input_shape, ckpt_path):
         super(StarterModel, self).__init__()
+
+        self.ckpt_path = ckpt_path
+
+        # Build the model layer by layer
         self.cnn_base = tf.keras.applications.mobilenet.MobileNet(input_shape=input_shape,
                                                                   # depth_multiplier=0.5,
                                                                   include_top=False,
@@ -37,3 +42,14 @@ class StarterModel(tf.keras.Model):
             tf.contrib.summary.scalar('loss', loss_value)
         return tape.gradient(loss_value, self.variables), loss_value
 
+    def save_tfe(self):
+        print('Saving model at %s' % self.ckpt_path)
+        tf.contrib.eager.Saver(self.variables).save(self.ckpt_path,
+                                                    global_step=tf.train.get_or_create_global_step())
+
+    def restore_tfe(self):
+        print('Restoring model at %s' % self.ckpt_path)
+        tf.contrib.eager.Saver(self.variables).restore(tf.train.latest_checkpoint(self.ckpt_path))
+
+    def fit(self):
+        pass

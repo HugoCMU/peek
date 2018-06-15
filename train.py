@@ -1,4 +1,3 @@
-import datetime
 from pathlib import Path
 import re
 import tensorflow as tf
@@ -81,7 +80,7 @@ if __name__ == '__main__':
     tf.enable_eager_execution(device_policy=tfe.DEVICE_PLACEMENT_SILENT)
 
     # Model and optimizer
-    model = StarterModel(input_shape=IMAGE_SIZE)
+    model = StarterModel(input_shape=IMAGE_SIZE, ckpt_path=str(model_dir / MODEL_CKPT))
     optimizer = tf.train.AdamOptimizer(learning_rate=LEARNING_RATE)
 
     # Tensorboard summary writer
