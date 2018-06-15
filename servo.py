@@ -17,13 +17,17 @@ servos = {'pan': pan_servo,
           'tilt': tilt_servo,
           'rot': rot_servo}
 
-# Move the Servos back and forth until the user terminates the example.
-while True:
-    for name, servo in servos.items():
-        print('Testing out servo %s' % name)
-        servo.min()
-        sleep(1)
-        servo.mid()
-        sleep(1)
-        servo.max()
-        sleep(1)
+def servo(action):
+    #TODO: Use Servo() calls to move 
+
+if __name__ == '__main__':
+    # Move the Servos back and forth until the user terminates the example.
+    while True:
+        for name, servo in servos.items():
+            print('Testing out servo %s' % name)
+            servo.min()
+            sleep(1)
+            servo.mid()
+            sleep(1)
+            servo.max()
+            sleep(1)

@@ -13,7 +13,7 @@ def model_descriptor(graph_name):
     # Face detection model has special implementation in VisionBonnet firmware.
     # input_shape, input_normalizer, and compute_graph params have on effect.
     return ModelDescriptor(
-        name='ModelDescriptor',
+        name='MODEL' + graph_name,
         input_shape=(1, 0, 0, 3),
         input_normalizer=(0, 0),
         compute_graph=utils.load_compute_graph(graph_name))
