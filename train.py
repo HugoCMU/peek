@@ -32,8 +32,8 @@ def _target_from_filename(filename):
     """
     # Sample filename: PSI_Tray031_2015-12-26--17-38-25_top.png
     filename_regex = re.search(r'\d+_([a-z]+).png', str(filename))
-    str_label = filename_regex.group()[0]
-    label_dict = {'high': 1, 'low': 0}
+    str_label = filename_regex.groups()[0]
+    label_dict = {'high': 1.0, 'low': 0.0}
     return label_dict[str_label]
 
 
@@ -44,10 +44,10 @@ def _parse_single(filename, label, image_size=IMAGE_SIZE):
     :return: image, label
     """
     # Decode and convert image to appropriate type
-    image = tf.image.decode_png(tf.read_file(filename))
+    image = tf.image.decode_png(tf.read_file(filename), channels=3)
     image = tf.image.convert_image_dtype(image, tf.float32)  # Also scales from [0, 255] to [0, 1)
     # Resize according to module requirements
-    image = tf.image.resize_images(image, image_size)
+    image = tf.image.resize_images(image, image_size[:2])
     return image, label
 
 
