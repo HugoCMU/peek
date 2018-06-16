@@ -1,4 +1,5 @@
 import tensorflow as tf
+import tensorflow.contrib.eager as tfe
 
 
 class StarterModel(tf.keras.Model):
@@ -8,9 +9,9 @@ class StarterModel(tf.keras.Model):
 
     def __init__(self, input_shape, ckpt_path):
         super(StarterModel, self).__init__()
-
+        # Train parameters
         self.ckpt_path = ckpt_path
-
+        self.global_step = tf.train.get_or_create_global_step()
         # Build the model layer by layer
         self.cnn_base = tf.keras.applications.mobilenet.MobileNet(input_shape=input_shape,
                                                                   # depth_multiplier=0.5,
@@ -44,12 +45,24 @@ class StarterModel(tf.keras.Model):
 
     def save_tfe(self):
         print('Saving model at %s' % self.ckpt_path)
-        tf.contrib.eager.Saver(self.variables).save(self.ckpt_path,
+        tf.contrib.eager.Saver(self.variables).save(self.ckpt_path + '/',
                                                     global_step=tf.train.get_or_create_global_step())
 
     def restore_tfe(self):
         print('Restoring model at %s' % self.ckpt_path)
         tf.contrib.eager.Saver(self.variables).restore(tf.train.latest_checkpoint(self.ckpt_path))
 
-    def fit(self):
-        pass
+    def train(self, dataset, optimizer, load_ckpt=True, device='/gpu:0', log_steps=5, save_steps=50):
+        if load_ckpt and tf.train.latest_checkpoint(self.ckpt_path):  # Will return None if no checkpoint found
+            self.restore_tfe()
+        with tf.device(device):
+            for (i, (image, target)) in enumerate(tfe.Iterator(dataset)):
+                tf.assign_add(self.global_step, 1)
+                with tf.contrib.summary.record_summaries_every_n_global_steps(log_steps):
+                    grads, loss = self.grad(image, target)
+                    optimizer.apply_gradients(zip(grads, self.variables), global_step=self.global_step)
+                    if i % log_steps == 0:
+                        print(f'Step {self.global_step} Loss is {loss}')
+                    if i % save_steps == 0:
+                        self.save_tfe()
+        self.save_tfe()

@@ -8,14 +8,12 @@ from model import StarterModel
 DATASET = 'dataset_18-06-15-22'
 
 # Training parameters
-MODEL_CKPT = 'model.ckpt'
+# MODEL_CKPT = 'model.ckpt'
 IMAGE_SIZE = [160, 160, 3]
-SHUFFLE_BUFFER = 1
+SHUFFLE_BUFFER = 4
 NUM_EPOCHS = 10
 LEARNING_RATE = 0.0001
-BATCH_SIZE = 1
-LOG_EVERY_N_STEPS = 3
-SAVE_EVERY_N_STEPS = 5
+BATCH_SIZE = 4
 
 # Directories
 root_dir = Path.cwd()
@@ -44,7 +42,7 @@ def _parse_single(filename, label, image_size=IMAGE_SIZE):
     :return: image, label
     """
     # Decode and convert image to appropriate type
-    image = tf.image.decode_png(tf.read_file(filename), channels=3)
+    image = tf.image.decode_png(tf.read_file(filename), channels=image_size[2])
     image = tf.image.convert_image_dtype(image, tf.float32)  # Also scales from [0, 255] to [0, 1)
     # Resize according to module requirements
     image = tf.image.resize_images(image, image_size[:2])
@@ -70,21 +68,6 @@ def load_dataset(train_dir, shuffle_buffer=SHUFFLE_BUFFER, num_epochs=NUM_EPOCHS
     # dataset = dataset.apply(tf.contrib.data.prefetch_to_device('/gpu:0'))
     return dataset
 
-
-def train(model, optimizer, dataset, ckpt, log_steps=LOG_EVERY_N_STEPS, save_steps=SAVE_EVERY_N_STEPS):
-    with tf.device('/gpu:0'):
-        for (i, (image, target)) in enumerate(tfe.Iterator(dataset)):
-            tf.assign_add(tf.train.get_or_create_global_step(), 1)
-            with tf.contrib.summary.record_summaries_every_n_global_steps(log_steps):
-                grads, loss = model.grad(image, target)
-                optimizer.apply_gradients(zip(grads, model.variables), global_step=tf.train.get_or_create_global_step())
-                if i % log_steps == 0:
-                    print(f'Step {tf.train.get_or_create_global_step().numpy()} Loss is {loss}')
-                if i % save_steps == 0:
-                    print(f' ----- Saving model at {ckpt_file}')
-                    ckpt.save(file_prefix=ckpt_file)
-
-
 if __name__ == '__main__':
 
     # Enable eager execution
@@ -92,23 +75,15 @@ if __name__ == '__main__':
     tf.enable_eager_execution(device_policy=tfe.DEVICE_PLACEMENT_SILENT)
 
     # Model and optimizer
-    model = StarterModel(input_shape=IMAGE_SIZE, ckpt_path=str(model_dir / MODEL_CKPT))
+    model = StarterModel(input_shape=IMAGE_SIZE, ckpt_path=str(model_dir))
     optimizer = tf.train.AdamOptimizer(learning_rate=LEARNING_RATE)
 
     # Tensorboard summary writer
     writer = tf.contrib.summary.create_file_writer(str(log_dir))
     writer.set_as_default()
 
-    # Checkpoint model saver
-    ckpt = tfe.Checkpoint(optimizer=optimizer, model=model, optimizer_step=tf.train.get_or_create_global_step())
-    ckpt_file = str(model_dir / MODEL_CKPT)
-    latest_ckpt = tf.train.latest_checkpoint(str(model_dir))  # Will return None if no checkpoint found
-    if latest_ckpt:
-        print(f'Restoring from checkpoint found at {latest_ckpt}')
-    ckpt.restore(latest_ckpt)
-
     # Load dataset
     dataset = load_dataset(data_dir)
 
     # Train the model
-    train(model, optimizer, dataset, ckpt)
+    model.train(dataset, optimizer)
