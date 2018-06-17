@@ -4,19 +4,29 @@ import argparse
 import gpiozero
 from aiy.vision.pins import PIN_A, PIN_B
 
+# Servo Types
+TOWER_PRO_SG90 = {'name': 'tower_pro', 'min_pulse_width': 0.00033, 'max_pulse_width': 0.00253, "frequency": 0.1}
+FUTABA_SG3003 = {'name': 'futaba', 'min_pulse_width': 0.0005, 'max_pulse_width': 0.00230, "frequency": 0.02}
+
 
 class Servo():
     max_velocity = 2  # Maximum angular velocity
+    min_pulse_width = 0.5
+    max_pulse_width = 2.3
 
-    def __init__(self, name, pin, angles):
+    def __init__(self, name, pin, angles, type):
         self.name = name
         self.angles = angles
+        self.type = type
         self.min = angles['min']
         self.max = angles['max']
         self.min_clip = angles['min_clip']
         self.max_clip = angles['max_clip']
         self.range = angles['max'] - angles['min']
         self.servo = gpiozero.AngularServo(pin,
+                                           min_pulse_width=type['min_pulse_width'],
+                                           max_pulse_width=type['max_pulse_width'],
+                                           frame_width=type['frequency'],
                                            min_angle=angles['min'],
                                            max_angle=angles['max'])
 
@@ -31,8 +41,8 @@ class Servo():
 # Run calibration 'servo.py -c' to get new servo values
 PAN = {'max': 20, 'min': -20, 'max_clip': 10, 'min_clip': -10}
 TILT = {'max': 20, 'min': -20, 'max_clip': 10, 'min_clip': -10}
-servos = [Servo('pan', PIN_A, PAN),
-          Servo('tilt', PIN_B, TILT)]
+servos = [Servo('pan', PIN_A, PAN, TOWER_PRO_SG90),
+          Servo('tilt', PIN_B, TILT, FUTABA_SG3003)]
 
 
 def update(input):
@@ -82,11 +92,23 @@ if __name__ == '__main__':
     else:
         # Move the Servos back and forth until the user terminates the example.
         while True:
-            for _ in range(100):
-                update([1.0, 1.0])
-            for _ in range(100):
-                update([1.0, 0.0])
-            for _ in range(100):
-                update([0.0, 1.0])
-            for _ in range(100):
-                update([0.0, 0.0])
+            for servo in servos:
+                print('Servo %s, type %s' % (servo.name, servo.type['name']))
+                print('MIN')
+                servo.servo.min()
+                sleep(2)
+                print('MAX')
+                servo.servo.max()
+                sleep(2)
+                print('MID')
+                servo.servo.mid()
+                sleep(2)
+
+            # for _ in range(100):
+            #     update([1.0, 1.0])
+            # for _ in range(100):
+            #     update([1.0, 0.0])
+            # for _ in range(100):
+            #     update([0.0, 1.0])
+            # for _ in range(100):
+            #     update([0.0, 0.0])
