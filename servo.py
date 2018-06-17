@@ -14,19 +14,19 @@ class Servo():
     min_pulse_width = 0.5
     max_pulse_width = 2.3
 
-    def __init__(self, name, pin, angles, type):
+    def __init__(self, name, pin, angles, servo_type):
         self.name = name
         self.angles = angles
-        self.type = type
+        self.type = servo_type
         self.min = angles['min']
         self.max = angles['max']
         self.min_clip = angles['min_clip']
         self.max_clip = angles['max_clip']
         self.range = angles['max'] - angles['min']
         self.servo = gpiozero.AngularServo(pin,
-                                           min_pulse_width=type['min_pulse_width'],
-                                           max_pulse_width=type['max_pulse_width'],
-                                           frame_width=type['frequency'],
+                                           min_pulse_width=servo_type['min_pulse_width'],
+                                           max_pulse_width=servo_type['max_pulse_width'],
+                                           # frame_width=servo_type['frequency'],
                                            min_angle=angles['min'],
                                            max_angle=angles['max'])
 
