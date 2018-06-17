@@ -55,8 +55,6 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     if args.calibrate:
-        servos = {'PAN': gpiozero.Servo(PIN_A),
-                  'TILT': gpiozero.Servo(PIN_B)}
         calibration_output = []
         for name, servo in servos.items():
             print('-----------Calibration for %s ----------' % name)
