@@ -8,7 +8,8 @@ from aiy.vision.pins import PIN_A, PIN_B
 class Servo():
     max_velocity = 2  # Maximum angular velocity
 
-    def __init__(self, pin, angles):
+    def __init__(self, name, pin, angles):
+        self.name = name
         self.angles = angles
         self.min = angles['min']
         self.max = angles['max']
@@ -30,8 +31,8 @@ class Servo():
 # Run calibration 'servo.py -c' to get new servo values
 PAN = {'max': 10, 'min': -10, 'max_clip': 10, 'min_clip': -10}
 TILT = {'max': 10, 'min': -10, 'max_clip': 10, 'min_clip': -10}
-servos = [Servo(PIN_A, PAN),
-          Servo(PIN_B, TILT)]
+servos = [Servo('pan', PIN_A, PAN),
+          Servo('tilt', PIN_B, TILT)]
 
 
 def update(input):
@@ -56,22 +57,22 @@ if __name__ == '__main__':
 
     if args.calibrate:
         calibration_output = []
-        for name, servo in servos.items():
-            print('-----------Calibration for %s ----------' % name)
-            servo.mid()
+        for servo in servos:
+            print('-----------Calibration for %s ----------' % servo.name)
+            servo.servo.mid()
             sleep(2)
 
             print('MEASURE MINIMUM ANGLE')
-            servo.min()
+            servo.servo.min()
             min_angle = int(input('Minimum angle?'))
             min_clip_angle = int(input('What would you like to clip it to?'))
 
             print('MEASURE MAXIMUM ANGLE')
-            servo.max()
+            servo.servo.max()
             max_angle = int(input('Maximum angle?'))
             max_clip_angle = int(input('What would you like to clip it to?'))
             calibration_output += ["%s = {'max': %d, 'min': %d, 'max_clip': %d, 'min_clip': %d}"
-                                   % (name, max_angle, min_angle, max_clip_angle, min_clip_angle)]
+                                   % (servo.name, max_angle, min_angle, max_clip_angle, min_clip_angle)]
             print('-----------Calibration Complete----------')
 
         print('Copy paste the following line into servo.py:')
