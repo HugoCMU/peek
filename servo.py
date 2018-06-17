@@ -29,8 +29,8 @@ class Servo():
 
 
 # Run calibration 'servo.py -c' to get new servo values
-PAN = {'max': 10, 'min': -10, 'max_clip': 10, 'min_clip': -10}
-TILT = {'max': 10, 'min': -10, 'max_clip': 10, 'min_clip': -10}
+PAN = {'max': 20, 'min': -20, 'max_clip': 10, 'min_clip': -10}
+TILT = {'max': 20, 'min': -20, 'max_clip': 10, 'min_clip': -10}
 servos = [Servo('pan', PIN_A, PAN),
           Servo('tilt', PIN_B, TILT)]
 
@@ -76,7 +76,8 @@ if __name__ == '__main__':
             print('-----------Calibration Complete----------')
 
         print('Copy paste the following line into servo.py:')
-        (print(s) for s in calibration_output)
+        for s in calibration_output:
+            print(s)
 
     else:
         # Move the Servos back and forth until the user terminates the example.
