@@ -2,7 +2,7 @@
 from time import sleep
 import argparse
 import gpiozero
-from aiy.vision.pins import PIN_A, PIN_B
+from aiy.pins import PIN_A, PIN_B
 
 # Servo Types
 TOWER_PRO_SG90 = {'name': 'tower_pro', 'min_pulse_width': 0.00033, 'max_pulse_width': 0.00253, "frequency": 0.1}
@@ -92,16 +92,16 @@ if __name__ == '__main__':
     else:
         # Move the Servos back and forth until the user terminates the example.
         while True:
-            for servo in servos:
-                print('Servo %s, type %s' % (servo.name, servo.type['name']))
+            for s in servos:
+                print('Servo %s, type %s' % (s.name, s.type['name']))
                 print('MIN')
-                servo.servo.min()
+                s.servo.min()
                 sleep(2)
                 print('MAX')
-                servo.servo.max()
+                s.servo.max()
                 sleep(2)
                 print('MID')
-                servo.servo.mid()
+                s.servo.mid()
                 sleep(2)
 
             # for _ in range(100):
