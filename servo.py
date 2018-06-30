@@ -62,7 +62,10 @@ class PanTilt:
         print('Testing TILT servo')
         self.tilt.scan()
 
-    def __del__(self):
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *args):
         GPIO.cleanup()
 
 
