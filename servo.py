@@ -26,12 +26,13 @@ class Servo:
         self.min = config['min']
         self.max = config['max']
         self.sleep = config['sleep']
+        self.frequency = config['frequency']
 
         self.servo = GPIO.setup(self.pin, GPIO.OUT)
 
     def go_to(self, input):
         input = max(self.min, min(self.max, input))
-        pwm = GPIO.PWM(self.servo, self.config['frequency'])
+        pwm = GPIO.PWM(self.servo, self.frequency)
         pwm.start(input)
         sleep(self.sleep)
         pwm.stop()
