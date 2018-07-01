@@ -4,16 +4,16 @@ import RPi.GPIO as GPIO
 
 # Servo Configs
 PAN = {'name': 'TOWER_PRO_MG995',
-       'pin': 13,
-       'min': 30,
-       'max': 70,
+       'pin': 12,
+       'min': 5,
+       'max': 10,
        'sleep': 1,
        "frequency": 50}  # Hz
 
 TILT = {'name': 'FUTABA_SG3003',
-        'pin': 12,
-        'min': 30,
-        'max': 70,
+        'pin': 13,
+        'min': 5,
+        'max': 10,
         'sleep': 1,
         "frequency": 50}  # Hz
 
@@ -31,7 +31,10 @@ class Servo:
         GPIO.setup(self.pin, GPIO.OUT)
 
     def go_to(self, input):
-        input = max(self.min, min(self.max, input))
+        # Clip the input between [0, 1], convert into duty cycles
+        input = max(0.0, min(1.0, input))
+        input = self.min + input * (self.max - self.min)
+        # TODO: Better way of doing this that doesn't involve sleep?
         pwm = GPIO.PWM(self.pin, self.frequency)
         pwm.start(input)
         sleep(self.sleep)
@@ -39,7 +42,7 @@ class Servo:
 
     def scan(self):
         print('Scanning servo %s' % self.name)
-        for dc in range(0, 100, 5):
+        for dc in range(0, 100, 1):
             self.go_to(dc)
 
 
