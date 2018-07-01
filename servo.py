@@ -5,8 +5,8 @@ import RPi.GPIO as GPIO
 # Servo Configs
 PAN = {'name': 'TOWER_PRO_MG995',
        'pin': 12,
-       'min': 8.0,
-       'max': 13.0,
+       'min': 3.0,
+       'max': 12.0,
        'sleep': 1.0,
        "frequency": 50}  # Hz
 
@@ -29,21 +29,22 @@ class Servo:
         self.frequency = config['frequency']
 
         GPIO.setup(self.pin, GPIO.OUT)
+        self.pwm = GPIO.PWM(self.pin, self.frequency)
+        print('PWM started on servo %s' % self.name)
+        self.pwm.start(input)
 
     def go_to(self, input):
         # Clip the input between [0, 1], convert into duty cycles
         input = max(0.0, min(1.0, input))
         input = self.min + input * (self.max - self.min)
-        # TODO: Better way of doing this that doesn't involve sleep?
-        pwm = GPIO.PWM(self.pin, self.frequency)
         print('Sending %s servo to %f' % (self.name, input))
-        pwm.start(input)
-        sleep(self.sleep)
-        pwm.stop()
+        self.pwm.ChangeDutyCycle(input)
 
     def scan(self):
         print('Scanning servo %s' % self.name)
-        for dc in range(0, 100, 1):
+        for dc in range(0, 100, 5):
+            print('Sleeping ....')
+            sleep(2)
             float_input = dc / 100.0
             self.go_to(float_input)
 
@@ -72,6 +73,9 @@ class PanTilt:
         return self
 
     def __exit__(self, *args):
+        # Kill the pwm and the gpio
+        self.pan.pwm.stop()
+        self.tilt.pwm.stop()
         GPIO.cleanup()
 
 
