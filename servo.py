@@ -5,8 +5,8 @@ import RPi.GPIO as GPIO
 # Servo Configs
 PAN = {'name': 'TOWER_PRO_MG995',
        'pin': 12,
-       'min': 5.0,
-       'max': 10.0,
+       'min': 8.0,
+       'max': 13.0,
        'sleep': 1.0,
        "frequency": 50}  # Hz
 
@@ -36,7 +36,7 @@ class Servo:
         input = self.min + input * (self.max - self.min)
         # TODO: Better way of doing this that doesn't involve sleep?
         pwm = GPIO.PWM(self.pin, self.frequency)
-        print('Sending %s servo to %d' % (self.name, input))
+        print('Sending %s servo to %f' % (self.name, input))
         pwm.start(input)
         sleep(self.sleep)
         pwm.stop()
@@ -45,7 +45,6 @@ class Servo:
         print('Scanning servo %s' % self.name)
         for dc in range(0, 100, 1):
             float_input = dc / 100.0
-            print('Sending %s servo to %d')
             self.go_to(float_input)
 
 
