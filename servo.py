@@ -5,16 +5,16 @@ import RPi.GPIO as GPIO
 # Servo Configs
 PAN = {'name': 'TOWER_PRO_MG995',
        'pin': 12,
-       'min': 5,
-       'max': 10,
-       'sleep': 1,
+       'min': 5.0,
+       'max': 10.0,
+       'sleep': 1.0,
        "frequency": 50}  # Hz
 
 TILT = {'name': 'FUTABA_SG3003',
         'pin': 13,
-        'min': 5,
-        'max': 10,
-        'sleep': 1,
+        'min': 5.0,
+        'max': 10.0,
+        'sleep': 1.0,
         "frequency": 50}  # Hz
 
 
@@ -43,7 +43,8 @@ class Servo:
     def scan(self):
         print('Scanning servo %s' % self.name)
         for dc in range(0, 100, 1):
-            self.go_to(dc)
+            float_input = dc / 100.0
+            self.go_to(float_input)
 
 
 class PanTilt:
