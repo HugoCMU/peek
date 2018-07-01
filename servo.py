@@ -29,15 +29,16 @@ class Servo:
         self.frequency = config['frequency']
 
         GPIO.setup(self.pin, GPIO.OUT)
-        self.pwm = GPIO.PWM(self.pin, self.frequency)
-        print('PWM started on servo %s' % self.name)
-        self.pwm.start(input)
 
     def go_to(self, input):
         # Clip the input between [0, 1], convert into duty cycles
         input = max(0.0, min(1.0, input))
         input = self.min + input * (self.max - self.min)
         print('Sending %s servo to %f' % (self.name, input))
+        # TODO: If pwm is out of scope it auto-drops, how to get into context manager?
+        self.pwm = GPIO.PWM(self.pin, self.frequency)
+        print('PWM started on servo %s' % self.name)
+        self.pwm.start(input)
         self.pwm.ChangeDutyCycle(input)
 
     def scan(self):
