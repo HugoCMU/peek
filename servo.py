@@ -7,14 +7,14 @@ PAN = {'name': 'TOWER_PRO_MG995',
        'pin': 13,
        'min': 30,
        'max': 70,
-       'sleep': 0.1,
+       'sleep': 1,
        "frequency": 50}  # Hz
 
 TILT = {'name': 'FUTABA_SG3003',
         'pin': 12,
         'min': 30,
         'max': 70,
-        'sleep': 0.1,
+        'sleep': 1,
         "frequency": 50}  # Hz
 
 
@@ -71,6 +71,5 @@ class PanTilt:
 
 
 if __name__ == '__main__':
-
     with PanTilt(PAN, TILT) as pantilt:
         pantilt.test()
